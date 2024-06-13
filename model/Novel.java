@@ -29,14 +29,13 @@ public class Novel extends BookForLoan {
 
     @Override
     public void calculateBookLoanPrice() {
-        double loanPrice;
+        double loanPrice = 0;
         if (getStock() < 10){
             loanPrice = (STOCKUNDERTEN_PERCENTAGE + NOVEL_PERCENTAGE) * getBookPrice();
-            setBookLoanPrice(loanPrice);
         }
-        else if (getStock() >= 10){
+        else {
             loanPrice = (STOCKABOVETEN_PERCENTAGE + NOVEL_PERCENTAGE) * getBookPrice();
-            setBookLoanPrice(loanPrice);
         }
+        setBookLoanPrice(loanPrice);
     }
 }

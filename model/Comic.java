@@ -29,15 +29,14 @@ public class Comic extends BookForLoan {
 
     @Override
     public void calculateBookLoanPrice(){
-        double loanPrice;
+        double loanPrice = 0;
         if (getStock() < 10){
             loanPrice = (COMIC_PERCENTAGE + STOCKUNDERTEN_PERCENTAGE) * getBookPrice();
-            setBookLoanPrice(loanPrice);
         }
-        else if (getStock() >= 10){
+        else {
             loanPrice = (COMIC_PERCENTAGE + STOCKABOVETEN_PERCENTAGE) * getBookPrice();
-            setBookLoanPrice(loanPrice);
         }
+        setBookLoanPrice(loanPrice);
     }
 
         

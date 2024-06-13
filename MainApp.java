@@ -3,8 +3,10 @@ import java.util.List;
 import java.util.Scanner;
 
 import model.BookForLoan;
+import model.Comic;
 import model.LoanBookOrder;
 import model.Member;
+import model.Novel;
 import repository.RepositoryBook;
 import repository.RepositoryMember;
 
@@ -47,49 +49,89 @@ public class MainApp {
     }
 
     public static void allBook(){
-        for (BookForLoan book : bookList) {
-            System.out.println(book);
-        }
+    String format = "| %-13s | %-40s | %-20s | %-5s | %n";
+    String line = "+---------------+------------------------------------------+----------------------+-------+";
+    
+    System.out.println(line);
+    System.out.printf(format, "Book ID", "Title", "Author", "Stock");
+    System.out.println(line);
+    
+    for (BookForLoan book : bookList) {
+        System.out.printf(format,
+            book.getBookId(),
+            book.getTitle(),
+            book.getAuthor(),
+            book.getStock()
+        );
+        System.out.println(line);
+    }
     }
 
     public static void loanBook(Scanner in){
-        for (BookForLoan book : bookList) {
-            System.out.println(book);
-        }
-
-        System.out.println("Enter your memberId: ");
-        in.nextLine();
-        String memberId = in.nextLine();
-        System.out.println("Enter bookId you want to loan: ");
-        String bookId = in.nextLine();
-        System.out.println("Enter your loan duration: ");
-        int loanDuration = in.nextInt();
-        in.nextLine();
-
-        // validate memberId
+        allBook();
+        
         boolean memberExist = false;
-        Member foundMember = new Member();
-        for (Member member : memberList) {
-            if (memberId.equalsIgnoreCase(member.getMemberId())){
-                foundMember = member;
-                memberExist = true;
-                break;
+        boolean bookExist = false;
+        Member foundMember = null;
+        do {
+            System.out.println("Enter your memberId: ");
+            String memberId = in.next();
+            
+            for (Member member : memberList) {
+                if (memberId.equalsIgnoreCase(member.getMemberId())){
+                    foundMember = member;
+                    memberExist = true;
+                    break;
+                }
             }
-        }
 
-        if (!memberExist){
-            System.out.println("Sorry your memberId is invalid");
-        }
-        else {
-            // validate bookId
-            boolean bookExist = false;
+            if (!memberExist){
+                System.out.println("Sorry your memberId is invalid");
+                System.out.println("Try input your memberId again");
+            }
+        } while (!memberExist);
+        
+        do {
+            System.out.println("Enter bookId you want to loan: ");
+            in.nextLine();
+            String bookId = in.nextLine();
+
             for (BookForLoan book : bookList) {
                 if (bookId.equalsIgnoreCase(book.getBookId())){
                     bookExist = true;
+                    System.out.println("Enter your loan duration: ");
+                    int loanDuration = in.nextInt();
+                    in.nextLine();
                     if (book.getStock() > 0){
-                        LoanBookOrder loanBook = new LoanBookOrder(foundMember, book, loanDuration);
-                        loanList.add(loanBook);
+                        if (book instanceof Comic){
+                            Comic comicBook = (Comic) book;
+                            Comic newComic = new Comic(
+                                comicBook.getBookId(), 
+                                comicBook.getTitle(), 
+                                comicBook.getAuthor(), 
+                                comicBook.getBookPrice(), 
+                                comicBook.getStock(), 
+                                comicBook.getGenre()
+                            );
+                            LoanBookOrder loanBook = new LoanBookOrder(foundMember, newComic, loanDuration);
+                            loanList.add(loanBook);
+                        }
+                        else if (book instanceof Novel){
+                            Novel novelBook = (Novel) book;
+                            Novel newNovel = new Novel(
+                                novelBook.getBookId(),
+                                novelBook.getTitle(),
+                                novelBook.getAuthor(),
+                                novelBook.getBookPrice(),
+                                novelBook.getStock(),
+                                novelBook.isSeries()
+                            );
+                            LoanBookOrder loanBook = new LoanBookOrder(foundMember, newNovel, loanDuration);
+                            loanList.add(loanBook);
+                        }
                         book.setStock(book.getStock() - 1);
+                        book.calculateBookLoanPrice();
+                        System.out.println("Book loaned successfully");
                         break;
                     }
                     else {
@@ -100,17 +142,32 @@ public class MainApp {
 
             if (!bookExist){
                 System.out.println("Sorry we don't have the book you are looking for");
+                System.out.println("Try input bookId again");
             }
-            else {
-                System.out.println("Book loaned successfully");
-            }
-        }
+        } while (!bookExist);
+
     }
 
     public static void allLoanOrder(){
-        for (LoanBookOrder order : loanList) {
-            System.out.println(order);
-        }
+        String format = "| %-10s | %-13s | %-13s | %-40s | %-15s | %-13s | %-10s | %n";
+    String line = "+------------+---------------+---------------+------------------------------------------+-----------------+---------------+------------+";
+    
+    System.out.println(line);
+    System.out.printf(format, "Order ID", "Member Name", "Book ID", "Title", "Loan Book Price", "Loan Duration", "Loan Fee");
+    System.out.println(line);
+    
+    for (LoanBookOrder order : loanList) {
+        System.out.printf(format,
+            order.getOrderId(),
+            order.getMember().getName(),
+            order.getBook().getBookId(),
+            order.getBook().getTitle(),
+            order.getBook().getBookLoanPrice(),
+            order.getLoanDuration(),
+            order.getLoanFee()
+        );
+        System.out.println(line);
+    }
     }
 
     public static void returnBook(Scanner in){
